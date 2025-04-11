@@ -1,9 +1,8 @@
-library(tidyverse)
 
-### ADAPTED FROM 4_3_WOS_ANALYSIS.RMD
 # returns a list of columns that match a text string
 # inputs: dataset and text string
 # outputs: a list of column indices, and a printout of column names
+### ADAPTED FROM 4_3_WOS_ANALYSIS.RMD
 column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
   questionIDs <- grep(text_string, names(mytable))
   # print relevant column names to check whether last item is a free text field
@@ -25,13 +24,13 @@ process_radio_button_q <- function(mytable, question, mylevels) {
   question <- sym(question)
 
   mytable %>%
-    group_by(!!question) %>%
-    summarize(count = n(), .groups = 'drop') %>%
-    rename(option = !!quo_name(question)) %>%
-    mutate(option = factor(option, levels = mylevels, ordered = TRUE)) %>%
-    filter(!is.na(option)) %>%
-    mutate(pct = count / sum(count)) %>%
-    arrange(option)
+    dplyr::group_by(!!question) %>%
+    dplyr::summarize(count = n(), .groups = 'drop') %>%
+    dplyr::rename(option = !!quo_name(question)) %>%
+    dplyr::mutate(option = factor(option, levels = mylevels, ordered = TRUE)) %>%
+    dplyr::filter(!is.na(option)) %>%
+    dplyr::mutate(pct = count / sum(count)) %>%
+    dplyr::arrange(option)
 }
 
 
@@ -54,16 +53,16 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
   fullname <- colnames(mytable)[index]
 
   mytable |>
-    rename(option = !!(fullname)) |>
-    mutate(option = factor(option, mylevels, ordered = TRUE)) |>
-    filter(!is.na(option),
+    dplyr::rename(option = !!(fullname)) |>
+    dplyr::mutate(option = factor(option, mylevels, ordered = TRUE)) |>
+    dplyr::filter(!is.na(option),
            !is.na({{mygroup}})) |>
-    group_by({{mygroup}}, option) |>
-    summarize(count = n()) |>
-    group_by({{mygroup}}) |>
-    mutate(pct = count / sum(count)) |>
-    ungroup() |>
-    complete(option, {{mygroup}})
+    dplyr::group_by({{mygroup}}, option) |>
+    dplyr::summarize(count = n()) |>
+    dplyr::group_by({{mygroup}}) |>
+    dplyr::mutate(pct = count / sum(count)) |>
+    dplyr::ungroup() |>
+    tidyr::complete(option, {{mygroup}})
 
 }
 
@@ -76,7 +75,7 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
 #' each with cols 'option', 'count', 'pct'
 #' @export
 process_multiq_radio_button_q <- function(mytable, question, mylevels) {
-  pattern <- str_c(question, '[a-z_]', '*', sep = '')
+  pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
   indices <- column_chunk(mytable, question)
 
   ans <- list()
@@ -114,7 +113,7 @@ process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
   # Ensure mygroup is treated as a column name
   mygroup <- sym(mygroup)
 
-  pattern <- str_c(question, '[a-z_]', '*', sep = '')
+  pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
   indices <- column_chunk(mytable, question)
 
   ans <- list()
@@ -143,24 +142,24 @@ process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
 #' @returns a ggplot object
 #' @export
 graph_responses <- function(mytable, mytitle) {
-  denominator <- mytable |> summarize(count = sum(count))
+  denominator <- mytable |> dplyr::summarize(count = sum(count))
 
   mycaption <- md(glue::glue("_n = {denominator$count} responses_"))
 
   p <- mytable |>
-    mutate(group = 'group') |>
-    ggplot(aes(x = group, y = pct, fill = option)) +
-    geom_bar(position = 'fill', color = 'black', stat = 'identity') +
-    geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
+    dplyr::mutate(group = 'group') |>
+    ggplot2::ggplot(aes(x = group, y = pct, fill = option)) +
+    ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
+    ggplot2::geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
               size = 3) +
-    coord_flip() +
-    theme_minimal() +
-    labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
-    theme(legend.position = 'bottom',
+    ggplot2::coord_flip() +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
+    ggplot2::theme(legend.position = 'bottom',
           axis.text.y = element_blank(),
           plot.caption = element_markdown()) +
-    guides(fill = guide_legend(nrow = 1, byrow = TRUE, reverse=TRUE)) # +
+    ggplot2::guides(fill = guide_legend(nrow = 1, byrow = TRUE, reverse=TRUE)) # +
     # paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto')
 
   p
@@ -179,23 +178,23 @@ graph_responses <- function(mytable, mytitle) {
 graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
   mygroup <- sym(mygroup)
 
-  denominator <- mytable |> summarize(count = sum(count, na.rm = T))
+  denominator <- mytable |> dplyr::summarize(count = sum(count, na.rm = T))
 
   mycaption <- md(glue::glue("_n = {denominator$count} responses_", sum = sum(denominator$count)))
 
   p <- mytable |>
-    ggplot(aes(x = {{mygroup}}, y = pct, fill = option)) +
-    geom_bar(position = 'fill', color = 'black', stat = 'identity') +
-    geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
+    ggplot2::ggplot(aes(x = {{mygroup}}, y = pct, fill = option)) +
+    ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
+    ggplot2::geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
               size = 3) +
-    coord_flip() +
-    theme_minimal() +
-    labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
-    theme(legend.position = 'bottom',
+    ggplot2::coord_flip() +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
+    ggplot2::theme(legend.position = 'bottom',
           # axis.text.y = element_blank(),
           plot.caption = element_markdown()) +
-    guides(fill = guide_legend(nrow = 1, byrow = TRUE, reverse=TRUE)) # +
+    ggplot2::guides(fill = guide_legend(nrow = 1, byrow = TRUE, reverse=TRUE)) # +
     # paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto')
 
   p
@@ -210,21 +209,21 @@ graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
 #' @export
 process_check_all_that_apply_q <- function(mytable, question) {
   index <- column_chunk(mytable, question)
-  pattern <- str_c(question, '[a-z_]', '*', sep = '')
+  pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
 
   tmp <- mytable |>
     # convert answers to T/F be/c each column just contains the same text as the question
-    mutate(across(index, ~ !is.na(.))) |>
-    select(index) |>
-    rename_with(~ sub(pattern = pattern, replacement = '', x = colnames(mytable)[index])) |>
+    dplyr::mutate(across(index, ~ !is.na(.))) |>
+    dplyr::select(index) |>
+    dplyr::rename_with(~ sub(pattern = pattern, replacement = '', x = colnames(mytable)[index])) |>
     # count answers
     colSums() |>
     data.frame()
 
   names(tmp) <- 'count'
   tmp <- tmp |>
-    rownames_to_column(var = 'option') |>
-    mutate(option = str_replace_all(option, '_', ' '),
+    tibble::rownames_to_column(var = 'option') |>
+    dplyr::mutate(option = str_replace_all(option, '_', ' '),
            option = str_replace(option, ' $', ''))
 
   tmp
@@ -241,24 +240,24 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
   mygroup <- sym(mygroup)
 
   index <- column_chunk(mytable, question)
-  pattern <- str_c(question, '[a-z_]', '*', sep = '')
+  pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
 
   tmp <- mytable |>
     # convert answers to T/F be/c each column just contains the same text as the question
-    mutate(across(all_of(index), ~!is.na(.))) |>
-    rename_with(~sub(pattern = pattern, replacement = '', x = colnames(mytable)[index]),
+    dplyr::mutate(across(all_of(index), ~!is.na(.))) |>
+    dplyr::rename_with(~sub(pattern = pattern, replacement = '', x = colnames(mytable)[index]),
                 .cols = colnames(mytable)[index]) |>
-    select(c({{mygroup}}, index)) |>
-    group_by({{mygroup}}) |>
-    summarize(across(is.logical, sum)) |>
-    rename_with(~ str_replace_all(.x, '_', ' ')) |>
-    rename_with(~str_replace(.x,' $', '')) |>
+    dplyr::select(c({{mygroup}}, index)) |>
+    dplyr::group_by({{mygroup}}) |>
+    dplyr::summarize(across(is.logical, sum)) |>
+    dplyr::rename_with(~ str_replace_all(.x, '_', ' ')) |>
+    dplyr::rename_with(~str_replace(.x,' $', '')) |>
     t() |>
     data.frame()
 
   names(tmp) <- tmp[1,]
   tmp <- tmp[-1,] |>
-    rownames_to_column()
+    tibble::rownames_to_column()
 
   tmp
 }
@@ -281,7 +280,7 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
 #' @export
 process_free_text_q <- function(mytable, question, terms) {
   index <- column_chunk(mytable, question)
-  tmp <- mytable |> pull(index)
+  tmp <- mytable |> dplyr::pull(index)
 
   v <- rep(NA, length(terms))
 
@@ -293,11 +292,11 @@ process_free_text_q <- function(mytable, question, terms) {
   names(v) <- terms
 
   data.frame(v) |>
-    rownames_to_column() |>
-    as_tibble() |>
-    rename(count = v) |>
-    arrange(desc(count)) |>
-    filter(count > 0) # |>
+    tibble::rownames_to_column() |>
+    tibble::as_tibble() |>
+    dplyr::rename(count = v) |>
+    dplyr::arrange(desc(count)) |>
+    dplyr::filter(count > 0) # |>
     # gt::gt(rowname_col = "rowname") |>
     # gt::tab_header(question) |>
     # gt::tab_footnote(footnote)
