@@ -12,6 +12,8 @@ column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
 }
 
 #' process_radio_button_q: Process a standard radio button question
+#' ie, tallies results from a single column with multiple possible answers
+#'
 #' @param mytable the dataset
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
@@ -34,7 +36,7 @@ process_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_radio_button_q_by_grp: Process a standard radio button,
+#' process_radio_button_q_by_grp: Process a standard radio button question,
 #' but break down numbers by group
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
@@ -66,7 +68,10 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
 
 }
 
-#' process_multiq_radio_button_q: Processes a multi-question radio button
+#' process_multiq_radio_button_q: Processes a multi-question radio button question,
+#' ie, tallies multiple cols, each of which is a subquestion of a larger
+#' question.
+#'
 #' @param mytable the dataset
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
@@ -97,8 +102,8 @@ process_multiq_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_multiq_radio_button_q_by_grp: Processes a multi-question radio button,
-#' but break down numbers by group
+#' process_multiq_radio_button_q_by_grp: Processes a multi-question radio button question,
+#' but breaks down numbers by group
 #'
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
@@ -270,7 +275,8 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
 #            stringr::str_subset('other_write_in'))
 # }
 
-#' process_free_text_q: Count regex terms in free-text answers
+#' process_free_text_q: Count regex terms in free-text answers. Multiple matches in
+#' a single answer are counted once.
 #'
 #' @param mytable the dataset
 #' @param question question under analysis (use the janitor::clean_names() text)
@@ -280,6 +286,8 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
 #' @export
 process_free_text_q <- function(mytable, question, terms) {
   index <- column_chunk(mytable, question)
+  if (length(index) != 1) stop("ERR: `question` must uniquely identify one column", call. = F)
+
   tmp <- mytable |> dplyr::pull(index)
 
   v <- rep(NA, length(terms))

@@ -2,7 +2,9 @@
 % Please edit documentation in R/surveyR.R
 \name{process_multiq_radio_button_q}
 \alias{process_multiq_radio_button_q}
-\title{process_multiq_radio_button_q: Processes a multi-question radio button}
+\title{process_multiq_radio_button_q: Processes a multi-question radio button question,
+ie, tallies multiple cols, each of which is a subquestion of a larger
+question.}
 \usage{
 process_multiq_radio_button_q(mytable, question, mylevels)
 }
@@ -18,5 +20,7 @@ a list of tibbles, each named according to the question,
 each with cols 'option', 'count', 'pct'
 }
 \description{
-process_multiq_radio_button_q: Processes a multi-question radio button
+process_multiq_radio_button_q: Processes a multi-question radio button question,
+ie, tallies multiple cols, each of which is a subquestion of a larger
+question.
 }
