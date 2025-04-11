@@ -17,7 +17,8 @@ column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
 #'
-#' @returns tibble with cols 'option', 'count', 'pct', where count = count of responses, pct = count as a fraction of all responses (count / sum(count))
+#' @returns tibble with cols 'option', 'count', 'pct', where
+#' count = count of responses, pct = count as a fraction of all responses (count / sum(count))
 #' @export
 process_radio_button_q <- function(mytable, question, mylevels) {
   # Ensure the question is treated as a column name
@@ -34,13 +35,15 @@ process_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_radio_button_q_by_grp: Process a standard radio button, but break down numbers by group
+#' process_radio_button_q_by_grp: Process a standard radio button,
+#' but break down numbers by group
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
 #'
-#' @returns a tibble with cols 'option', <mygroup>, count, pct, where count = count of responses and pct = count as a percentage of all responses PER GROUP (ie, each group will sum to 100%)
+#' @returns a tibble with cols 'option', <mygroup>, count, pct,
+#' where count = count of responses and pct = count as a percentage of all responses PER GROUP (ie, each group will sum to 100%)
 #' @export
 process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) {
 
@@ -69,7 +72,8 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
 #'
-#' @returns a list of tibbles, each named according to the question, each with cols 'option', 'count', 'pct'
+#' @returns a list of tibbles, each named according to the question,
+#' each with cols 'option', 'count', 'pct'
 #' @export
 process_multiq_radio_button_q <- function(mytable, question, mylevels) {
   pattern <- str_c(question, '[a-z_]', '*', sep = '')
@@ -94,14 +98,16 @@ process_multiq_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_multiq_radio_button_q_by_grp: Processes a multi-question radio button, but break down numbers by group
+#' process_multiq_radio_button_q_by_grp: Processes a multi-question radio button,
+#' but break down numbers by group
 #'
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
 #' @param question question under analysis (use the janitor::clean_names() text)
 #' @param mylevels vector of possible answers to the question
 #'
-#' @returns a list of tibbles, each named for one question in the overall question and containing cols 'option', <mygroup>, 'count', 'pct'
+#' @returns a list of tibbles, each named for one question in the overall question
+#' and containing cols 'option', <mygroup>, 'count', 'pct'
 #' @export
 process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
                                                     question, mylevels) {
@@ -128,7 +134,8 @@ process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
   ans
 }
 
-#' graph_responses: creates a stacked, single-bar chart showing the fraction of responses for each option (ie, the column totals 100% (% of responses))
+#' graph_responses: creates a stacked, single-bar chart showing the fraction of
+#' responses for each option (ie, the column totals 100% (% of responses))
 #'
 #' @param mytable the output of process_radio_button_q()
 #' @param mytitle Title text for the graph
@@ -159,7 +166,9 @@ graph_responses <- function(mytable, mytitle) {
   p
 }
 
-#' graph_responses_by_grp: creates a stacked, multicolumn bar chart where each bar represents one group in 'mygroup'; each column totals 100% of responses in that group
+#' graph_responses_by_grp: creates a stacked, multicolumn bar chart where
+#' each bar represents one group in 'mygroup'; each column totals 100% of
+#' responses in that group
 #'
 #' @param mytable the output of process_radio_button_q_by_grp()
 #' @param mygroup the column whose values define a group
