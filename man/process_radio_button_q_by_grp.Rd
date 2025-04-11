@@ -2,7 +2,8 @@
 % Please edit documentation in R/surveyR.R
 \name{process_radio_button_q_by_grp}
 \alias{process_radio_button_q_by_grp}
-\title{process_radio_button_q_by_grp: Process a standard radio button, but break down numbers by group}
+\title{process_radio_button_q_by_grp: Process a standard radio button,
+but break down numbers by group}
 \usage{
 process_radio_button_q_by_grp(mytable, mygroup, question, mylevels)
 }
@@ -16,8 +17,10 @@ process_radio_button_q_by_grp(mytable, mygroup, question, mylevels)
 \item{mylevels}{vector of possible answers to the question}
 }
 \value{
-a tibble with cols 'option', <mygroup>, count, pct, where count = count of responses and pct = count as a percentage of all responses PER GROUP (ie, each group will sum to 100%)
+a tibble with cols 'option', <mygroup>, count, pct,
+where count = count of responses and pct = count as a percentage of all responses PER GROUP (ie, each group will sum to 100%)
 }
 \description{
-process_radio_button_q_by_grp: Process a standard radio button, but break down numbers by group
+process_radio_button_q_by_grp: Process a standard radio button,
+but break down numbers by group
 }

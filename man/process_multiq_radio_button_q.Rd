@@ -14,7 +14,8 @@ process_multiq_radio_button_q(mytable, question, mylevels)
 \item{mylevels}{vector of possible answers to the question}
 }
 \value{
-a list of tibbles, each named according to the question, each with cols 'option', 'count', 'pct'
+a list of tibbles, each named according to the question,
+each with cols 'option', 'count', 'pct'
 }
 \description{
 process_multiq_radio_button_q: Processes a multi-question radio button

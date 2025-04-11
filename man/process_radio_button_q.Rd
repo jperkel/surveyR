@@ -14,7 +14,8 @@ process_radio_button_q(mytable, question, mylevels)
 \item{mylevels}{vector of possible answers to the question}
 }
 \value{
-tibble with cols 'option', 'count', 'pct', where count = count of responses, pct = count as a fraction of all responses (count / sum(count))
+tibble with cols 'option', 'count', 'pct', where
+count = count of responses, pct = count as a fraction of all responses (count / sum(count))
 }
 \description{
 process_radio_button_q: Process a standard radio button question
