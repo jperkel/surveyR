@@ -2,9 +2,8 @@
 % Please edit documentation in R/surveyR.R
 \name{graph_responses_by_grp}
 \alias{graph_responses_by_grp}
-\title{graph_responses_by_grp: creates a stacked, multicolumn bar chart where
-each bar represents one group in 'mygroup'; each column totals 100% of
-responses in that group}
+\title{creates a stacked, multicolumn bar chart where each bar represents one group
+in 'mygroup'; each column totals 100% of responses in that group}
 \usage{
 graph_responses_by_grp(mytable, mygroup, mytitle)
 }
@@ -19,7 +18,6 @@ graph_responses_by_grp(mytable, mygroup, mytitle)
 a ggplot object.
 }
 \description{
-graph_responses_by_grp: creates a stacked, multicolumn bar chart where
-each bar represents one group in 'mygroup'; each column totals 100% of
-responses in that group
+creates a stacked, multicolumn bar chart where each bar represents one group
+in 'mygroup'; each column totals 100% of responses in that group
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/surveyR.R
 \name{process_multiq_radio_button_q_by_grp}
 \alias{process_multiq_radio_button_q_by_grp}
-\title{process_multiq_radio_button_q_by_grp: Processes a multi-question radio button question,
-but breaks down numbers by group}
+\title{Processes a multi-question radio button question, but breaks down numbers by group}
 \usage{
 process_multiq_radio_button_q_by_grp(mytable, mygroup, question, mylevels)
 }
@@ -21,6 +20,5 @@ a list of tibbles, each named for one question in the overall question
 and containing cols 'option', <mygroup>, 'count', 'pct'
 }
 \description{
-process_multiq_radio_button_q_by_grp: Processes a multi-question radio button question,
-but breaks down numbers by group
+Processes a multi-question radio button question, but breaks down numbers by group
 }

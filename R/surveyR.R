@@ -11,8 +11,8 @@ column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
   questionIDs
 }
 
-#' process_radio_button_q: Process a standard radio button question
-#' ie, tallies results from a single column with multiple possible answers
+#' Process a standard radio button question (ie, tallies results from a
+#' single column with multiple possible answers)
 #'
 #' @param mytable the dataset
 #' @param question question under analysis (use the janitor::clean_names() text)
@@ -23,12 +23,13 @@ column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
 #' @export
 process_radio_button_q <- function(mytable, question, mylevels) {
   # Ensure the question is treated as a column name
-  question <- sym(question)
+  question <- rlang::sym(question)
 
   mytable %>%
     dplyr::group_by(!!question) %>%
     dplyr::summarize(count = n(), .groups = 'drop') %>%
-    dplyr::rename(option = !!quo_name(question)) %>%
+    # dplyr::rename(option = !!quo_name(question)) %>%
+    dplyr::rename(option = !!rlang::as_name(question)) %>%
     dplyr::mutate(option = factor(option, levels = mylevels, ordered = TRUE)) %>%
     dplyr::filter(!is.na(option)) %>%
     dplyr::mutate(pct = count / sum(count)) %>%
@@ -36,8 +37,8 @@ process_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_radio_button_q_by_grp: Process a standard radio button question,
-#' but break down numbers by group
+#' Process a standard radio button question, but break down numbers by group
+#'
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
 #' @param question question under analysis (use the janitor::clean_names() text)
@@ -49,7 +50,7 @@ process_radio_button_q <- function(mytable, question, mylevels) {
 process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) {
 
   # Ensure mygroup is treated as a column name
-  mygroup <- sym(mygroup)
+  mygroup <- rlang::sym(mygroup)
 
   index <- column_chunk(mytable, question)
   fullname <- colnames(mytable)[index]
@@ -68,8 +69,8 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
 
 }
 
-#' process_multiq_radio_button_q: Processes a multi-question radio button question,
-#' ie, tallies multiple cols, each of which is a subquestion of a larger
+#' Process a multi-question radio button question,
+#' ie, tallies multiple cols, each of which is a sub-question of a larger
 #' question.
 #'
 #' @param mytable the dataset
@@ -102,8 +103,7 @@ process_multiq_radio_button_q <- function(mytable, question, mylevels) {
 }
 
 
-#' process_multiq_radio_button_q_by_grp: Processes a multi-question radio button question,
-#' but breaks down numbers by group
+#' Processes a multi-question radio button question, but breaks down numbers by group
 #'
 #' @param mytable the dataset
 #' @param mygroup the column whose values define a group
@@ -116,7 +116,7 @@ process_multiq_radio_button_q <- function(mytable, question, mylevels) {
 process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
                                                     question, mylevels) {
   # Ensure mygroup is treated as a column name
-  mygroup <- sym(mygroup)
+  mygroup <- rlang::sym(mygroup)
 
   pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
   indices <- column_chunk(mytable, question)
@@ -138,7 +138,7 @@ process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
   ans
 }
 
-#' graph_responses: creates a stacked, single-bar chart showing the fraction of
+#' creates a stacked, single-bar chart showing the fraction of
 #' responses for each option (ie, the column totals 100% (% of responses))
 #'
 #' @param mytable the output of process_radio_button_q()
@@ -170,9 +170,8 @@ graph_responses <- function(mytable, mytitle) {
   p
 }
 
-#' graph_responses_by_grp: creates a stacked, multicolumn bar chart where
-#' each bar represents one group in 'mygroup'; each column totals 100% of
-#' responses in that group
+#' creates a stacked, multicolumn bar chart where each bar represents one group
+#' in 'mygroup'; each column totals 100% of responses in that group
 #'
 #' @param mytable the output of process_radio_button_q_by_grp()
 #' @param mygroup the column whose values define a group
@@ -181,7 +180,7 @@ graph_responses <- function(mytable, mytitle) {
 #' @returns a ggplot object.
 #' @export
 graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
-  mygroup <- sym(mygroup)
+  mygroup <- rlang::sym(mygroup)
 
   denominator <- mytable |> dplyr::summarize(count = sum(count, na.rm = T))
 
@@ -205,7 +204,7 @@ graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
   p
 }
 
-#' process_check_all_that_apply_q: Process a 'check all answers that apply' question
+#' Process a check-all-that-apply question
 #'
 #' @param mytable the dataset
 #' @param question question under analysis (use the janitor::clean_names() text)
@@ -234,7 +233,7 @@ process_check_all_that_apply_q <- function(mytable, question) {
   tmp
 }
 
-#' process_check_all_that_apply_q_by_grp
+#' Process a check-all-that-apply question, but break down numbers by group
 #'
 #' @param mytable the dataset
 #' @param mygroup column whose values defines a group
@@ -242,7 +241,7 @@ process_check_all_that_apply_q <- function(mytable, question) {
 #'
 #' @returns a tibble of questions (cols) x grps (rows)
 process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
-  mygroup <- sym(mygroup)
+  mygroup <- rlang::sym(mygroup)
 
   index <- column_chunk(mytable, question)
   pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
@@ -275,7 +274,7 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
 #            stringr::str_subset('other_write_in'))
 # }
 
-#' process_free_text_q: Count regex terms in free-text answers. Multiple matches in
+#' Count regex terms in free-text answers. Multiple matches in
 #' a single answer are counted once.
 #'
 #' @param mytable the dataset

@@ -2,8 +2,8 @@
 % Please edit documentation in R/surveyR.R
 \name{process_radio_button_q}
 \alias{process_radio_button_q}
-\title{process_radio_button_q: Process a standard radio button question
-ie, tallies results from a single column with multiple possible answers}
+\title{Process a standard radio button question (ie, tallies results from a
+single column with multiple possible answers)}
 \usage{
 process_radio_button_q(mytable, question, mylevels)
 }
@@ -19,6 +19,6 @@ tibble with cols 'option', 'count', 'pct', where
 count = count of responses, pct = count as a fraction of all responses (count / sum(count))
 }
 \description{
-process_radio_button_q: Process a standard radio button question
-ie, tallies results from a single column with multiple possible answers
+Process a standard radio button question (ie, tallies results from a
+single column with multiple possible answers)
 }

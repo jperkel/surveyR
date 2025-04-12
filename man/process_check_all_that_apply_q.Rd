@@ -2,7 +2,7 @@
 % Please edit documentation in R/surveyR.R
 \name{process_check_all_that_apply_q}
 \alias{process_check_all_that_apply_q}
-\title{process_check_all_that_apply_q: Process a 'check all answers that apply' question}
+\title{Process a check-all-that-apply question}
 \usage{
 process_check_all_that_apply_q(mytable, question)
 }
@@ -15,5 +15,5 @@ process_check_all_that_apply_q(mytable, question)
 a tibble: options (rows) x count
 }
 \description{
-process_check_all_that_apply_q: Process a 'check all answers that apply' question
+Process a check-all-that-apply question
 }

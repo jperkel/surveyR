@@ -2,7 +2,7 @@
 % Please edit documentation in R/surveyR.R
 \name{graph_responses}
 \alias{graph_responses}
-\title{graph_responses: creates a stacked, single-bar chart showing the fraction of
+\title{creates a stacked, single-bar chart showing the fraction of
 responses for each option (ie, the column totals 100% (% of responses))}
 \usage{
 graph_responses(mytable, mytitle)
@@ -16,6 +16,6 @@ graph_responses(mytable, mytitle)
 a ggplot object
 }
 \description{
-graph_responses: creates a stacked, single-bar chart showing the fraction of
+creates a stacked, single-bar chart showing the fraction of
 responses for each option (ie, the column totals 100% (% of responses))
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/surveyR.R
 \name{process_check_all_that_apply_q_by_grp}
 \alias{process_check_all_that_apply_q_by_grp}
-\title{process_check_all_that_apply_q_by_grp}
+\title{Process a check-all-that-apply question, but break down numbers by group}
 \usage{
 process_check_all_that_apply_q_by_grp(mytable, mygroup, question)
 }
@@ -17,5 +17,5 @@ process_check_all_that_apply_q_by_grp(mytable, mygroup, question)
 a tibble of questions (cols) x grps (rows)
 }
 \description{
-process_check_all_that_apply_q_by_grp
+Process a check-all-that-apply question, but break down numbers by group
 }

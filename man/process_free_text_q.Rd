@@ -2,7 +2,7 @@
 % Please edit documentation in R/surveyR.R
 \name{process_free_text_q}
 \alias{process_free_text_q}
-\title{process_free_text_q: Count regex terms in free-text answers. Multiple matches in
+\title{Count regex terms in free-text answers. Multiple matches in
 a single answer are counted once.}
 \usage{
 process_free_text_q(mytable, question, terms)
@@ -18,6 +18,6 @@ process_free_text_q(mytable, question, terms)
 a tibble tallying the occurrence of each term in 'terms' in the question
 }
 \description{
-process_free_text_q: Count regex terms in free-text answers. Multiple matches in
+Count regex terms in free-text answers. Multiple matches in
 a single answer are counted once.
 }
