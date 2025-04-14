@@ -1,0 +1,446 @@
+---
+title: "Example survey analysis"
+author: "First_name Last_name"
+date: "today"
+echo: true
+warning: false
+message: false
+editor: source
+format: 
+  html:
+    code-fold: true
+    toc: true
+    toc-location: left
+    self-contained: true
+
+---
+
+### Load libraries
+
+```{r}
+#| label: load_libraries
+
+library(tidyverse)
+library(ggtext)
+library(gt)
+library(patchwork)
+library(data.table)
+
+# devtools::install_local('~/Documents/Nature/Programming/surveyR_0.1.0.tgz')
+library(surveyR)
+
+```
+### Load data
+
+```{r}
+#| label: load_data
+#| echo: false
+
+mydata <- read_rds(file = 'cleaned_survey_data.rds') |> 
+  janitor::clean_names()
+
+```
+
+### Column chunk function
+```{r}
+# returns a list of columns that match a text string
+# inputs: dataset and text string
+# outputs: a list of column indices, and a printout of column names
+### ADAPTED FROM 4_3_WOS_ANALYSIS.RMD
+column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
+  questionIDs <- grep(text_string, names(mytable))
+  # print relevant column names to check whether last item is a free text field
+  if (print_colnames) print(names(mytable[questionIDs]))
+
+  questionIDs
+}
+
+```
+
+
+### Q3
+What is your **overall opinion** of the science advice system and practices in your country? 
+
+```{r}
+#| label: q3_overall 
+
+full_q <- "Q3: What is your overall opinion of the science advice system and practices in your country?"
+
+levels <- c('Very good (consistent practices and a coherent system)',
+            'Good (good practices within many areas of government)',
+            'Patchy (science advice practiced inconsistently in government)',
+            'Poor (practices are inconsistent and/or of low quality)',
+            'Very poor (very little science advice practiced or no system exists)',
+            'No opinion/Don’t know')
+
+q3 <- surveyR::process_radio_button_q(mydata, 'what_is_your_overall_opinion_of_the_science_advice_system_and_practices_in_your_country', levels)
+footnote <- md(glue::glue("_n = {sum(q3$count)} responses_"))
+
+q3 |> 
+  gt::gt(rowname_col = 'option') |> 
+  gt::tab_header(title = full_q) |> 
+  gt::tab_footnote(footnote) |> 
+  gt::fmt_percent('pct')
+```
+
+```{r}
+#| label: q3_overall_graph
+
+surveyR::graph_responses(q3, full_q) +
+  theme(aspect.ratio = 1/10) +
+  paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto',
+                                    labels = strsplit(levels, "\\(.*\\)$") |>
+                                      stringr::str_trim())
+
+```
+
+##### By group
+
+```{r}
+#| label: q3_by_group
+
+q3_grp <- surveyR::process_radio_button_q_by_grp(mydata, 'analysis_group',  'what_is_your_overall_opinion_of_the_science_advice_system_and_practices_in_your_country', levels)
+
+footnote <- md(glue::glue("_n = {sum(q3_grp$count, na.rm = T)} responses_"))
+q3_grp |> 
+  gt::gt(groupname_col = 'analysis_group', rowname_col = 'option') |> 
+  gt::tab_header(title = full_q) |> 
+  gt::tab_footnote(footnote) |> 
+  gt::fmt_percent(columns = 'pct') |> 
+  gt::sub_missing() |> 
+  gt::summary_rows(fns = list(id = 'sum', label = md("**TOTAL**"), fn = 'sum'))
+```
+
+```{r}
+#| label: q3_by_group_graph
+
+surveyR::graph_responses_by_grp(q3_grp, 'analysis_group', full_q) +
+  theme(aspect.ratio = 3/10) +
+  paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto', 
+                                    labels = strsplit(levels, "\\(.*\\)$") |>
+                                      stringr::str_trim())  
+
+```
+
+##### By World Bank income group
+
+```{r}
+#| label: q3_by_wb
+
+q3_wb <- surveyR::process_radio_button_q_by_grp(mydata, 'income_group', 'what_is_your_overall_opinion_of_the_science_advice_system_and_practices_in_your_country', levels)
+
+footnote <- md(glue::glue("_n = {sum(q3_wb$count, na.rm = T)} responses_"))
+
+q3_wb |> 
+  filter(!is.na(income_group)) |> 
+  gt::gt(groupname_col = 'income_group', rowname_col = 'option') |> 
+  gt::tab_header(title = full_q) |> 
+  gt::tab_footnote(footnote) |> 
+  gt::fmt_percent(columns = 'pct') |> 
+  gt::sub_missing() |> 
+  gt::summary_rows(fns = list(id = 'sum', label = md("**TOTAL**"), fn = 'sum'))
+```
+
+```{r}
+#| label: q3_by_wb_graph
+
+surveyR::graph_responses_by_grp(q3_wb, 'income_group', full_q) +
+  theme(aspect.ratio = 3/10) +
+  paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto', 
+                                    labels = strsplit(levels, "\\(.*\\)$") |>
+                                      stringr::str_trim())  
+
+```
+
+### Q6
+Please indicate how strongly you agree or disagree with the following statements about **obstacles to successful science advice to government in your country**. 
+
+```{r}
+#| label: q6_overall
+
+levels <- c('Strongly agree', 'Agree', 'Neither agree nor disagree', 'Disagree', 'Strongly disagree')
+full_q <- 'Q6: Please indicate how strongly you agree or disagree with the following statements about obstacles to successful science advice to government in your country.'
+tmp <- surveyR::process_multiq_radio_button_q(mydata, 'please_indicate_how_strongly_you_agree_or_disagree_with_the_following_statements_about_obstacles_to_successful_science_advice', levels)
+tmp2 <- as_tibble(data.table::rbindlist(tmp, idcol = TRUE))
+
+t <- tmp2 |>
+  mutate(option = factor(option, levels = levels, ordered = TRUE)) |>
+  arrange(option) |>
+  filter(option != 'NA' & !is.na(option)) |>
+  group_by(.id) |> 
+  mutate(pct = count/sum(count)) |> 
+  gt(groupname_col = '.id', rowname_col = 'option') |>
+  gt::summary_rows(fns = list(id = 'sum', label = md('**TOTAL RESPONSES**')) ~ sum(., na.rm = T)) |> 
+  gt::tab_header(full_q) |>
+  gt::sub_missing(missing_text = '--') |>
+  gt::fmt_percent('pct')
+
+t
+```
+
+```{r}
+#| label: q6_overall_graph
+#| fig-width: 10
+#| fig-height: 13
+
+l <- list() # list to hold the graphs
+v <- NA # empty vector to hold the positions of graphs
+for (i in 1:length(tmp)) {
+  l[[i]] <- surveyR::graph_responses(tmp[[i]], names(tmp[i]))
+  v[i] <- l[[i]]$data |> 
+    # mutate(fxn = value/count) |> 
+    filter(option == 'Strongly agree') |> 
+    # purrr::pluck('fxn')
+    purrr::pluck('pct')
+}
+# number the vector
+names(v) <- 1:length(tmp)
+# pos is a list of indices, sorted by level of 'strongly agree'
+pos <- as.integer(names(sort(v, decreasing = TRUE)))
+
+final <-  l[[pos[1]]] 
+for (i in 2:length(l)) {
+  final <- final / l[[pos[i]]]  
+}
+final <- final +
+  patchwork::plot_annotation(title = full_q) +
+  patchwork::plot_layout(guides = 'collect') &
+  theme(legend.position = 'bottom')
+final
+
+```
+##### By group
+
+```{r}
+#| label: q6_by_group
+#| results: asis
+
+tmp_grp <- surveyR::process_multiq_radio_button_q_by_grp(mydata, 'analysis_group',  'please_indicate_how_strongly_you_agree_or_disagree_with_the_following_statements_about_obstacles_to_successful_science_advice', levels)
+
+l <- list()
+for (i in 1:length(tmp_grp)) {
+  mysubtitle <- names(tmp_grp[i])
+  footnote = md(glue::glue("_n = {sum(tmp_grp[[i]]$count, na.rm = TRUE)} responses_"))
+  
+  l[[i]] <- tmp_grp[[i]] |>
+    filter(!is.na(analysis_group)) |> 
+    gt::gt(groupname_col = 'analysis_group', rowname_col = 'option') |> 
+    gt::tab_header(title = full_q, subtitle = mysubtitle) |> 
+    gt::tab_footnote(footnote) |> 
+    gt::fmt_percent(columns = 'pct') |> 
+    gt::sub_missing() |> 
+    gt::summary_rows(fns = list(id = 'sum', label = md("**TOTAL**"), fn = 'sum'))
+}
+
+l
+
+```
+
+```{r}
+#| label: q6_by_group_graph
+#| fig-width: 10
+#| fig-height: 15
+
+l <- list() # list to hold the graphs
+for (i in 1:length(tmp_grp)) {
+  l[[i]] <- surveyR::graph_responses_by_grp(tmp_grp[[i]], 'analysis_group', names(tmp_grp[i]))
+}
+
+final <-  l[[1]] 
+for (i in 2:length(l)) {
+  final <- final / l[[i]]  
+}
+final <- final +
+  patchwork::plot_annotation(title = full_q) +
+  patchwork::plot_layout(guides = 'collect') &
+  theme(legend.position = 'bottom')
+final
+
+```
+##### By World Bank income group
+
+```{r}
+#| label: q6_by_wb
+#| results: asis
+
+tmp_wb <- surveyR::process_multiq_radio_button_q_by_grp(mydata, 'income_group',  'please_indicate_how_strongly_you_agree_or_disagree_with_the_following_statements_about_obstacles_to_successful_science_advice', levels)
+
+l <- list()
+for (i in 1:length(tmp_wb)) {
+  mysubtitle <- names(tmp_wb[i])
+  footnote = md(glue::glue("_n = {sum(tmp_grp[[i]]$count, na.rm = TRUE)} responses_"))
+  
+  l[[i]] <- tmp_wb[[i]] |>
+    filter(!is.na(income_group)) |> 
+    gt::gt(groupname_col = 'income_group', rowname_col = 'option') |> 
+    gt::tab_header(title = full_q, subtitle = mysubtitle) |> 
+    gt::tab_footnote(footnote) |> 
+    gt::fmt_percent(columns = 'pct') |> 
+    gt::sub_missing() |> 
+    gt::summary_rows(fns = list(id = 'sum', label = md("**TOTAL**"), fn = 'sum'))
+}
+
+l
+
+```
+
+```{r}
+#| label: q6_by_wb_graph
+#| fig-width: 10
+#| fig-height: 15
+
+l <- list() # list to hold the graphs
+for (i in 1:length(tmp_wb)) {
+  l[[i]] <- surveyR::graph_responses_by_grp(tmp_wb[[i]], 'income_group', names(tmp_wb[i]))
+}
+
+final <-  l[[1]] 
+for (i in 2:length(l)) {
+  final <- final / l[[i]]  
+}
+final <- final +
+  patchwork::plot_annotation(title = full_q) +
+  patchwork::plot_layout(guides = 'collect') &
+  theme(legend.position = 'bottom')
+final
+
+```
+
+### Q9
+Looking internationally, **which country** do you think is **particularly successful** at ensuring science is factored into government policies and decisions i.e. they have an enviable science advice system?
+
+```{r}
+#| label: q9_overall
+
+# this list of countries is more or less comprehensive given the answers to q9 and q10:
+re_usa <- '\\bUSA?\\b|United States( of America)?|\\bEEUU\\b|U\\.S\\.(A\\.)?'
+terms <- c(
+  re_usa,
+  'United Kingdom|\\bUK\\b|Great Britain|England|Scotland|U\\.K\\.',
+  # either " EU" or "^EU" but not "EEUU", eg
+  '\\bEU\\b|European (Union|Commission)',
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Angola',
+  'Argentina',
+  'Australia',
+  'Bangladesh',
+  'Belarus',
+  'Belgium',
+  'Botswana',
+  'Bra[zs]il',
+  'Burundi',
+  'Cambodia',
+  'Camero[ou]n',
+  'Canad[az]',
+  'Centrafrique|Central African Republic',
+  'Chad',
+  'Chil[ei]',
+  'China',
+  'Colombia',
+  'Congo',
+  'Costa Rica',
+  'Cuba',
+  'Ecuador',
+  'El Salvador',
+  'Eritrea',
+  'Ethiopia',
+  'Franc[e|ia]',
+  '[G|H]ermany|Alemania|Deutchland',
+  'Ghana',
+  'Greece',
+  'Guatemala',
+  'Haiti',
+  'Honduras',
+  'Hungary',
+  'India',
+  'Indonesia',
+  'Iran',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Japan',
+  'Kenya',
+  'Latvia',
+  'Malay?sia',
+  'Mexico',
+  'Myanmar',
+  'Netherlands?',
+  'N(ew|ueva)[ -]Zea?landa?|NZ',
+  'Nicaragua',
+  'Nigeria',
+  'North Korea',
+  'Pakistan',
+  'Peru',
+  'Philippines',
+  'Poland',
+  'Portugal',
+  'Romania',
+  'Russia',
+  'Rwanda',
+  'Samoa',
+  'Scandinavia|Finland|Norway|Sweden|D[ei]na?mark|Nordic',
+  'Singap[ou]re',
+  'Somalia',
+  'South Africa',
+  'South Korea|(?<!North )Korea', # (?<!...) allows Korea but not North Korea
+  '(South )?Sudan',
+  'Spain',
+  'Sri Lanka',
+  'Switzerland|Suiza',
+  'Taiwan',
+  'Togo',
+  'Turkey',
+  'Venezuela',
+  'Vietnam',
+  'Zimbabwe'
+)
+
+question <- "Q9: Looking internationally, which country do you think is particularly successful at ensuring science is factored into government policies and decisions?"
+
+surveyR::process_free_text_q(mydata, terms = terms, question = 'looking_internationally_which_country_if_any_do_you_think_is_particularly_successful_at_ensuring_science_is_factored_into_government_policies_and_decisions_i_e_they_have_an_enviable_science_advice_system')
+
+```
+
+
+### Q10
+Looking internationally, **which country** do you think is **particularly unsuccessful** at ensuring science is factored into government policies and decisions? 
+
+```{r}
+#| label: q10_overall
+
+question <- "Q10: Looking internationally, which country do you think is particularly unsuccessful at ensuring science is factored into government policies and decisions?"
+
+surveyR::process_free_text_q(mydata, terms = terms, question = 'looking_internationally_which_country_if_any_do_you_think_is_particularly_unsuccessful_at_ensuring_science_is_factored_into_government_policies_and_decisions')
+
+```
+
+### Q28
+Which of these best describes the organization(s) you work for?
+
+```{r}
+#| label: q28_overall
+
+tmp <- surveyR::process_check_all_that_apply_q(mydata, 'which_of_these_best_describes_the_organization_s_you_work_for') |> 
+  filter(option != "other write in 78") 
+
+# get total number of respondents (people could select >1 answer)
+index <- column_chunk(mydata, 'which_of_these_best_describes_the_organization_s_you_work_for')
+response_count <- mydata |> 
+  select(all_of(index)) |> 
+  rowwise() %>% 
+  mutate(any_response = any(!is.na(across(everything())))) |> 
+  # if all responses are NA, all will be FALSE and any_response will be 0, logical FALSE
+  # convert to logical rather than int to count any response at all
+  purrr::pluck('any_response') |> 
+  sum()
+
+footnote <- md(glue::glue("_n = {response_count} respondents_"))
+
+tmp |> 
+  arrange(desc(count)) |> 
+  gt::gt(rowname_col = 'option') |> 
+  gt::tab_header("Q28: Which of these best describes the organization(s) you work for?") |> 
+  gt::tab_footnote(footnote)
+```
