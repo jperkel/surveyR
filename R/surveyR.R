@@ -29,7 +29,8 @@ process_radio_button_q <- function(mytable, question, mylevels) {
     dplyr::group_by(!!question) %>%
     dplyr::summarize(count = n(), .groups = 'drop') %>%
     # dplyr::rename(option = !!quo_name(question)) %>%
-    dplyr::rename(option = !!rlang::as_name(question)) %>%
+    # dplyr::rename(option = !!rlang::as_name(question)) %>%
+    dplyr::rename(option = question) %>%
     dplyr::mutate(option = factor(option, levels = mylevels, ordered = TRUE)) %>%
     dplyr::filter(!is.na(option)) %>%
     dplyr::mutate(pct = count / sum(count)) %>%
@@ -56,7 +57,7 @@ process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) 
   fullname <- colnames(mytable)[index]
 
   mytable |>
-    dplyr::rename(option = !!(fullname)) |>
+    dplyr::rename(option = !!fullname) |>
     dplyr::mutate(option = factor(option, mylevels, ordered = TRUE)) |>
     dplyr::filter(!is.na(option),
            !is.na({{mygroup}})) |>
