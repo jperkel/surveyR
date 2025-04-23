@@ -1,7 +1,7 @@
 Package: surveyR
 Type: Package
 Title: Package to process Nature survey questions
-Version: 0.1.003
+Version: 0.1.004
 Authors@R: c(
     person(
       "Jeffrey", "Perkel",

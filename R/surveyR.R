@@ -23,6 +23,10 @@ column_chunk <- function(mytable, text_string, print_colnames = FALSE) {
 #' @export
 process_radio_button_q <- function(mytable, question, mylevels) {
   # Ensure the question is treated as a column name
+  index <- column_chunk(mytable, question)
+  if (length(index) != 1) stop("ERR: 'question' must uniquely identify one column.", call. = FALSE)
+
+  question <- colnames(mytable)[index]
   question <- rlang::sym(question)
 
   mytable %>%
@@ -51,22 +55,28 @@ process_radio_button_q <- function(mytable, question, mylevels) {
 process_radio_button_q_by_grp <- function(mytable, mygroup, question, mylevels) {
 
   # Ensure mygroup is treated as a column name
+  index <- column_chunk(mytable, question)
+  if (length(index) != 1) stop("ERR: 'question' must uniquely identify one column.", call. = FALSE)
+
+  question <- colnames(mytable)[index]
+  question <- rlang::sym(question)
   mygroup <- rlang::sym(mygroup)
 
-  index <- column_chunk(mytable, question)
-  fullname <- colnames(mytable)[index]
+  # index <- column_chunk(mytable, question)
+  # fullname <- colnames(mytable)[index]
 
   mytable |>
-    dplyr::rename(option = !!fullname) |>
+    # dplyr::rename(option = !!fullname) |>
+    dplyr::rename(option = !!question) |>
     dplyr::mutate(option = factor(option, mylevels, ordered = TRUE)) |>
     dplyr::filter(!is.na(option),
-           !is.na({{mygroup}})) |>
-    dplyr::group_by({{mygroup}}, option) |>
+           !is.na(!!mygroup)) |>
+    dplyr::group_by(!!mygroup, option) |>
     dplyr::summarize(count = n()) |>
-    dplyr::group_by({{mygroup}}) |>
+    dplyr::group_by(!!mygroup) |>
     dplyr::mutate(pct = count / sum(count)) |>
     dplyr::ungroup() |>
-    tidyr::complete(option, {{mygroup}})
+    tidyr::complete(option, !!mygroup)
 
 }
 
@@ -117,7 +127,7 @@ process_multiq_radio_button_q <- function(mytable, question, mylevels) {
 process_multiq_radio_button_q_by_grp <- function(mytable, mygroup,
                                                     question, mylevels) {
   # Ensure mygroup is treated as a column name
-  mygroup <- rlang::sym(mygroup)
+  # mygroup <- rlang::sym(mygroup)
 
   pattern <- stringr::str_c(question, '[a-z_]', '*', sep = '')
   indices <- column_chunk(mytable, question)
@@ -188,7 +198,7 @@ graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
   mycaption <- md(glue::glue("_n = {denominator$count} responses_", sum = sum(denominator$count)))
 
   p <- mytable |>
-    ggplot2::ggplot(aes(x = {{mygroup}}, y = pct, fill = option)) +
+    ggplot2::ggplot(aes(x = !!mygroup, y = pct, fill = option)) +
     ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
     ggplot2::geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
@@ -252,8 +262,8 @@ process_check_all_that_apply_q_by_grp <- function(mytable, mygroup, question) {
     dplyr::mutate(across(all_of(index), ~!is.na(.))) |>
     dplyr::rename_with(~sub(pattern = pattern, replacement = '', x = colnames(mytable)[index]),
                 .cols = colnames(mytable)[index]) |>
-    dplyr::select(c({{mygroup}}, index)) |>
-    dplyr::group_by({{mygroup}}) |>
+    dplyr::select(c(!!mygroup, index)) |>
+    dplyr::group_by(!!mygroup) |>
     dplyr::summarize(across(is.logical, sum)) |>
     dplyr::rename_with(~ str_replace_all(.x, '_', ' ')) |>
     dplyr::rename_with(~str_replace(.x,' $', '')) |>
