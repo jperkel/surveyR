@@ -166,9 +166,10 @@ graph_responses <- function(mytable, mytitle) {
     dplyr::mutate(group = 'group') |>
     ggplot2::ggplot(aes(x = group, y = pct, fill = option)) +
     ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
-    ggplot2::geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
+    ggrepel::geom_text_repel(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
-              size = 3) +
+              size = 3,
+              angle = 45) +
     ggplot2::coord_flip() +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
@@ -200,9 +201,10 @@ graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
   p <- mytable |>
     ggplot2::ggplot(aes(x = !!mygroup, y = pct, fill = option)) +
     ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
-    ggplot2::geom_text(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
+    ggrepel::geom_text_repel(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
-              size = 3) +
+              size = 3,
+              angle = 45) +
     ggplot2::coord_flip() +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
