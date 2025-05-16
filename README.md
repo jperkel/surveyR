@@ -108,3 +108,32 @@ surveyR::graph_responses_by_grp(q3_grp, 'analysis_group', full_q) +
                                     labels = strsplit(levels, "\\(.*\\)$") |>
                                       stringr::str_trim())  
 ```
+
+### Tips & Tricks
+#### Dealing with long category names or titles
+
+By default `surveyR` graph titles and legends are on a single line. You can cause titles 
+to wrap by enclosing the question title in `stringr::str_wrap()`.
+
+Push legends onto multiple lines with, eg, `guides(fill = guide_legend(nrow = 2))` after the call to `graph_responses()`.
+
+You can also use `case_when()` and `str_detect()` to shorten category names prior to graphing: 
+
+
+```
+q_best_interpretation |> 
+    mutate(option = case_when(
+    stringr::str_detect(option, "Copenhagen interpretation") ~ "Copenhagen",
+    stringr::str_detect(option, "Bohm-de Broglie") ~ "Bohm-de Boglie",
+    stringr::str_detect(option, "Spontaneous-collapse theories") ~ "Spontaneous-collapse",
+    stringr::str_detect(option, "Superdeterministic theories") ~ "Superdeterministic",
+    stringr::str_detect(option, "Many-Worlds") ~ "Many-worlds",
+    stringr::str_detect(option, "Relational quantum mechanics.") ~ "Relational QM",
+    TRUE ~ option
+  )) |> 
+surveyR::graph_responses(stringr::str_wrap(full_q)) +
+  theme(aspect.ratio = 1/10) +
+  paletteer::scale_fill_paletteer_d('colorblindr::OkabeIto') +
+  guides(fill=guide_legend(nrow=2))
+  ```
+

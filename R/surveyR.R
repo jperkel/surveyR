@@ -168,8 +168,9 @@ graph_responses <- function(mytable, mytitle) {
     ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
     ggrepel::geom_text_repel(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
-              size = 3,
-              angle = 45) +
+              size = 2,
+              angle = 45
+              ) +
     ggplot2::coord_flip() +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = mytitle, x = NULL, y = '% responses', fill = NULL, caption = mycaption) +
@@ -203,7 +204,7 @@ graph_responses_by_grp <- function(mytable, mygroup, mytitle) {
     ggplot2::geom_bar(position = 'fill', color = 'black', stat = 'identity') +
     ggrepel::geom_text_repel(aes(label = glue::glue("{count} ({round(pct * 100, 2)}%)")),
               position = position_fill(vjust = 0.5),
-              size = 3,
+              size = 2,
               angle = 45) +
     ggplot2::coord_flip() +
     ggplot2::theme_minimal() +
